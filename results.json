@@ -1,14 +1,14 @@
 {
-    "api": {
-        "key": "",
-        "user_agent": "TCVD-PR2-UOC/1.0 (practica universitaria UOC; aroldan@uoc.edu) python-requests/<versión>",
-        "requests": 0
-    },
-    "window": {
-        "seed": 1945750,
-        "day": "2025-01-20",
-        "shift": 1,
-        "start": "2025-01-20T12:00:00Z",
-        "end": "2025-01-20T23:59:59Z"
-    }
+  "api": {
+    "key": "",
+    "user_agent": "TCVD-PR2-UOC/1.0 (practica universitaria UOC; aroldan@uoc.edu) python-requests/2.34.2",
+    "requests": 0
+  },
+  "window": {
+    "seed": 1945750,
+    "day": "2025-01-20",
+    "shift": 1,
+    "start": "2025-01-20T12:00:00Z",
+    "end": "2025-01-20T23:59:59Z"
+  }
 }

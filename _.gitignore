@@ -1,0 +1,19 @@
+# Ficheros descargados (apartado 4): no deben subirse
+downloads/
+
+# Caché de requests-cache (solo desarrollo)
+http_cache.sqlite
+*.sqlite
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Imágenes y comprimidos: no deben subirse
+*.jpg
+*.jpeg
+*.png
+*.zip
+*.gz
