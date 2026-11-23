@@ -1,7 +1,7 @@
 {
   "api": {
     "key": "",
-    "user_agent": "TCVD-PR2-UOC/1.0 (practica universitaria UOC; aroldan@uoc.edu) python-requests/2.34.2",
+    "user_agent": "TCVD-PR2-UOC/1.0 (practica universitaria UOC; aroldan@uoc.edu) python-requests/2.32.5",
     "requests": 0
   },
   "window": {
