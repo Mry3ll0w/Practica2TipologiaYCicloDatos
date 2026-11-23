@@ -62,3 +62,7 @@ comprobación del cuerpo de las respuestas 200. Cada petición se añade a `data
 ```bash
 python validar.py .
 ```
+
+### Nota
+Con respecto al parametro maxlag, no usaremos este dado que la gestion del reintento de peticiones lo hacemos mediante "Retry after".
+Igualmente para mantener la funcionalidad en caso de querer darle uso, la dejamos en el codigo.
