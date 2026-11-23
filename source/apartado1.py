@@ -1,6 +1,7 @@
 """Apartado 1: ventana de tiempo, User-Agent y ficheros de partida.
 
-Inicializa results.json (bloques "api" y "window") y dataset/requests.csv.
+Inicializa results.json (bloques "api" y "window") y dataset/requests.csv
+Como tal no hace peticiones a la API, unicamente prepara los ficheros de partida para el resto de apartados.
 
 Forma de uso:
     python source/apartado1.py --seed 1945750
