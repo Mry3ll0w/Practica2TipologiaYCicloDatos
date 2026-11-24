@@ -2,7 +2,7 @@
 
 Contiene el cálculo de la ventana de tiempo, la gestión de results.json y un
 cliente HTTP que respeta las políticas de la API de Wikimedia Commons:
-User-Agent identificativo, peticiones en serie (para cumplir con las políticas de la API, especificada en la documentación), pausa aleatoria entre
+User-Agent identificativo, peticiones en serie, pausa aleatoria entre
 peticiones, reintentos con Retry-After y registro de cada petición en
 dataset/requests.csv.
 """
@@ -48,13 +48,14 @@ class ApiError(Exception):
 
 
 def build_user_agent() -> str:
-    """Aporta la descripción del User-Agent."""
+    """User-Agent descriptivo: cliente/versión (contacto) biblioteca/versión."""
     return f"{CLIENT_NAME} ({CONTACT}) python-requests/{requests.__version__}"
 
 
 # --- Ventana de tiempo -----------------------------------------------------------
 def compute_window(seed: int) -> dict:
-    """Deriva la ventana de tiempo a partir de la semilla (apartado 1).
+    """Deriva la ventana de tiempo a partir de la semilla (enunciado, apartado 1).
+
     day   = 2023-01-01 + tres últimas cifras de la semilla (días)
     shift = cuarta cifra desde la derecha: par -> 0 (mañana), impar -> 1 (tarde)
     """
@@ -70,7 +71,7 @@ def compute_window(seed: int) -> dict:
     }
 
 
-# --- Gestion y uso de results.json ----------------------------------------------------------------------
+# --- results.json ----------------------------------------------------------------------
 def load_results(path: Path = RESULTS_PATH) -> dict:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
@@ -99,6 +100,14 @@ def append_request_row(row: list, path: Path = REQUESTS_PATH) -> None:
     init_requests_csv(path)
     with open(path, "a", newline="", encoding="utf-8") as f:
         csv.writer(f, lineterminator="\n").writerow(row)
+
+
+def count_requests(section: int, path: Path = REQUESTS_PATH) -> int:
+    """Número de filas de requests.csv de un apartado (robusto ante repeticiones)."""
+    if not path.exists():
+        return 0
+    with open(path, newline="", encoding="utf-8") as f:
+        return sum(1 for row in csv.DictReader(f) if row["section"] == str(section))
 
 
 def _retry_after(headers) -> int | None:

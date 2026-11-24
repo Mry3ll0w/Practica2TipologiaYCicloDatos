@@ -9,7 +9,7 @@ Forma de uso:
 """
 import argparse
 
-from common import (REQUESTS_PATH, build_user_agent, compute_window,
+from source.common import (REQUESTS_PATH, build_user_agent, compute_window,
                     init_requests_csv, load_results, save_results)
 
 

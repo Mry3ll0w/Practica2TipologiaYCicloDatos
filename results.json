@@ -10,5 +10,26 @@
     "shift": 1,
     "start": "2025-01-20T12:00:00Z",
     "end": "2025-01-20T23:59:59Z"
+  },
+  "population": {
+    "requests": 35,
+    "n": 17440,
+    "first_upload": "2025-01-20T12:00:00Z",
+    "last_upload": "2025-01-20T23:59:55Z",
+    "mime_types": {
+      "image/jpeg": 15733,
+      "image/png": 647,
+      "audio/wav": 520,
+      "image/svg+xml": 259,
+      "application/ogg": 100,
+      "image/tiff": 52,
+      "application/pdf": 51,
+      "video/webm": 33,
+      "image/webp": 31,
+      "image/vnd.djvu": 6,
+      "audio/mpeg": 4,
+      "image/gif": 3,
+      "audio/flac": 1
+    }
   }
 }
