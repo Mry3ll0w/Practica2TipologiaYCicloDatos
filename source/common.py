@@ -47,6 +47,14 @@ class ApiError(Exception):
     """Error devuelto por la API (en el cuerpo de un 200) o código HTTP no reintentable."""
 
 
+class HttpStatusError(ApiError):
+    """Código HTTP no reintentable (por ejemplo, 414 URI demasiado larga)."""
+
+    def __init__(self, status: int, url: str):
+        super().__init__(f"HTTP {status} en {url}")
+        self.status = status
+
+
 def build_user_agent() -> str:
     """User-Agent descriptivo: cliente/versión (contacto) biblioteca/versión."""
     return f"{CLIENT_NAME} ({CONTACT}) python-requests/{requests.__version__}"
@@ -141,12 +149,17 @@ class ApiClient:
         self.session.headers["User-Agent"] = build_user_agent()
 
     # -- API pública --------------------------------------------------------------------------
-    def api_get(self, params: dict) -> dict:
-        """GET a la Action API; devuelve el JSON ya comprobado (error y avisos)."""
+    def api_get(self, params: dict, post: bool = False, retry: bool = False) -> dict:
+        """Petición a la Action API; devuelve el JSON ya comprobado (error y avisos).
+
+        Por defecto es GET. post=True envía los parámetros en el cuerpo (útil si la
+        URL sería demasiado larga) y retry=True marca la petición como repetición de
+        una petición fallida en requests.csv.
+        """
         params = dict(params)
         if self.maxlag is not None:
             params.setdefault("maxlag", self.maxlag)
-        return self._fetch(self.api_url, params=params)
+        return self._fetch(self.api_url, params=params, post=post, retry=retry)
 
     def download(self, url: str, dest: Path) -> Path:
         """Descarga un fichero (en serie y con el mismo ritmo que las consultas)."""
@@ -160,13 +173,16 @@ class ApiClient:
             return
         self.sleep(self.rng.uniform(*self.pause))
 
-    def _attempt(self, url, params, dest, retry):
-        """Envía un GET, lo registra y devuelve (status, headers, body, error)."""
+    def _attempt(self, url, params, dest, retry, post=False):
+        """Envía un GET o un POST, lo registra y devuelve (status, headers, body, error)."""
         sent_at = datetime.now(timezone.utc)
         t0 = time.perf_counter()
         status, size, headers, body, error, from_cache = 0, 0, {}, None, None, False
         try:
-            resp = self.session.get(url, params=params, stream=dest is not None, timeout=TIMEOUT)
+            if post:
+                resp = self.session.post(url, data=params, timeout=TIMEOUT)
+            else:
+                resp = self.session.get(url, params=params, stream=dest is not None, timeout=TIMEOUT)
             final_url, status, headers = resp.url, resp.status_code, resp.headers
             from_cache = getattr(resp, "from_cache", False)
             if dest is not None and status == 200:
@@ -179,12 +195,13 @@ class ApiClient:
                 size = len(body)
         except requests.RequestException as exc:
             error = exc
-            final_url = requests.Request("GET", url, params=params).prepare().url
+            final_url = url if post else requests.Request("GET", url, params=params).prepare().url
         duration_ms = int((time.perf_counter() - t0) * 1000)
         if not from_cache:
             self.n_requests += 1
             append_request_row(
-                [sent_at.strftime("%Y-%m-%dT%H:%M:%SZ"), self.section, "GET", final_url,
+                [sent_at.strftime("%Y-%m-%dT%H:%M:%SZ"), self.section,
+                 "POST" if post else "GET", final_url,
                  status, size, retry, duration_ms],
                 self.requests_path,
             )
@@ -192,8 +209,8 @@ class ApiClient:
                 self.bytes_downloaded += size
         return status, headers, body, error
 
-    def _fetch(self, url, params=None, dest=None):
-        """GET con reintentos: 429, 5xx, fallos de red y error maxlag en un 200."""
+    def _fetch(self, url, params=None, dest=None, post=False, retry=False):
+        """Petición con reintentos: 429, 5xx, fallos de red y error maxlag en un 200."""
         wait = None
         for attempt in range(MAX_RETRIES + 1):
             if attempt == 0:
@@ -201,7 +218,7 @@ class ApiClient:
             else:
                 log.warning("Reintento %d tras esperar %s s", attempt, wait)
                 self.sleep(wait)
-            status, headers, body, error = self._attempt(url, params, dest, retry=int(attempt > 0))
+            status, headers, body, error = self._attempt(url, params, dest, retry=int(attempt > 0 or retry), post=post)
 
             retry_after = _retry_after(headers)
             if error is not None:
@@ -224,7 +241,7 @@ class ApiClient:
                     raise ApiError(err)      # error de la API no reintentable
                 reason = "maxlag"
             else:
-                raise ApiError(f"HTTP {status} en {url}")
+                raise HttpStatusError(status, url)
 
             if attempt == MAX_RETRIES:
                 raise ApiError(f"Agotados {MAX_RETRIES} reintentos ({reason})")

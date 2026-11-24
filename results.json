@@ -31,5 +31,17 @@
       "image/gif": 3,
       "audio/flac": 1
     }
+  },
+  "sample": {
+    "requests": 2,
+    "titles_per_request": 50,
+    "window_cost": 315,
+    "sample_cost": 2,
+    "n": 100
+  },
+  "files": {
+    "requests": 20,
+    "n": 20,
+    "bytes_downloaded": 20486001
   }
 }
